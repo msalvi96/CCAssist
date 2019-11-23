@@ -1,0 +1,4 @@
+111|Amanda Mendez|amendez@stevens.edu
+222|Bianka Solomon|bsolomon@stevens.edu
+999|Mrunal Salvi|msalvi@stevens.edu
+1900|Walter White|mrunal.salvi96@gmail.com
