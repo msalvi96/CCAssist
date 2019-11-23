@@ -112,7 +112,7 @@ class International:
         """ Get On-Campus Student data """
 
         self.data_frame = self.data_frame.loc[self.data_frame[International.columns['onCampus']]
-                                              .str.contains('On-campus classes on the Stevens campus')]
+                                              .str.contains('On-campus classes on the Stevens campus', na=False)]
 
     def no_i20(self):
         """ Get data with no I-20 """
