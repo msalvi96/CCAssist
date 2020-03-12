@@ -3,48 +3,7 @@
 import os
 from time import sleep
 import pandas as pd
-
-def pretty_print(string, design):
-    """ Pretty Print Function """
-
-    print(f"  {string}  ".center(100, design))
-
-def get_int_input():
-    """ Function to get integer input """
-
-    var_input = input()
-    try:
-        var_input = int(var_input)
-        return var_input
-    except ValueError:
-        print('ERROR: Enter a Valid Number... \n')
-        get_int_input()
-
-def clear():
-    """ Function to clear screen """
-
-    if os.name == 'nt':
-        _ = os.system('cls')
-
-    else:
-        _ = os.system('clear')
-
-def get_file(i):
-    """ Function to get input file """
-
-    name = input(f"Enter Name of the File {i}:\n")
-    name = name + ".xlsx"
-    os.chdir(os.getcwd())
-    if not os.path.exists(name):
-        raise FileNotFoundError
-
-    return name
-
-def get_file_name():
-    """ Function to get file name """
-
-    file_name = input(f"Enter name for Output Excel File:\n")
-    return file_name
+from utils import pretty_print, get_int_input, clear, get_file, get_file_name
 
 def concat_ordered_columns(frames):
     """ Function to concat dataframes in list and order them by columns """
@@ -76,7 +35,7 @@ def concat_data_main():
             raise ArithmeticError
 
         for i in range(number):
-            name = get_file(i)
+            name = get_file()
             data_frame = pd.read_excel(name)
             file_list.append(data_frame)
             clear()
@@ -111,3 +70,5 @@ def concat_data_main():
         print("Oops something went wrong")
         print(log_error)
         sleep(10)
+
+concat_data_main()

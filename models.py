@@ -29,6 +29,7 @@ class International:
         """ Initialise International Object - Create Pandas Dataframe """
 
         os.chdir(os.getcwd())
+        self.stack = []
         self.name = name
         self.today = datetime.datetime.now()
 
@@ -38,135 +39,192 @@ class International:
         except FileNotFoundError:
             print("Error: File Does not Exist...")
 
-    def master(self):
-        """ Get Masters/Graduate Certificate Data """
+    def enrollment_options(self, choice):
+        """ Method to filter through enrollment options """
 
-        self.data_frame = self.data_frame.loc[self.data_frame[International.columns['enrollInfo']]
-                                              .str.contains('Master|Graduate Certificate|Engineer*', regex=True)]
+        if choice == 1:
+            self.data_frame = self.data_frame.loc[self.data_frame[International.columns['enrollInfo']]
+                                    .str.contains('Master|Graduate Certificate|Engineer*', regex=True)]
 
-    def doctoral(self):
-        """ Get Doctoral Data """
+            self.stack.append("Masters/Graduate Certificate")
 
-        self.data_frame = self.data_frame.loc[self.data_frame[International.columns['enrollInfo']]
-                                              .str.contains('^Ph.D.', regex=True)]
+        if choice == 2:
+            self.data_frame = self.data_frame.loc[self.data_frame[International.columns['enrollInfo']]
+                                    .str.contains('^Ph.D.', regex=True)]
 
-    def full_time_international(self):
-        """ Get Full Time Student Data """
+            self.stack.append("PhD")
 
-        self.data_frame = self.data_frame.loc[self.data_frame[International.columns['enrollStatus']] == "Full-time"]
+    def enrollment_info(self, choice):
+        """ Method to filter through enrollment information """
 
-    def part_time_international(self):
-        """ Get Part Time Student Data """
+        if choice == 1:
+            self.data_frame = self.data_frame.loc[self.data_frame[International.columns['enrollStatus']] == "Full-time"]
+            self.stack.append("Full-Time")
 
-        self.data_frame = self.data_frame.loc[self.data_frame[International.columns['enrollStatus']] == "Part-time"]
+        if choice == 2:
+            self.data_frame = self.data_frame.loc[self.data_frame[International.columns['enrollStatus']] == "Part-time"]
+            self.stack.append("Part-Time")
 
-    def admitted_bin(self):
-        """ Get Admits/Conditional Admits """
+    def admitted_info(self, choice):
+        """ Method to filter through admitted information """
 
-        self.data_frame = self.data_frame.loc[self.data_frame[International.columns['bin']]
+        if choice == 1:
+            self.data_frame = self.data_frame.loc[self.data_frame[International.columns['bin']]
                                               .str.contains('Admit|Conditional Admit', regex=True)]
+            
+            self.stack.append("Admits/Conditional Admits")
 
-    def citizenship_china(self):
-        """ Get Data with Chinese Citizenship """
+    def citizenship_info(self, choice):
+        """ Method to filter through citizenship information """
 
-        self.data_frame = self.data_frame.loc[self.data_frame[International.columns['citizenship']]
-                                              .str.contains('China|South Korea|Vietnam|Taiwan', regex=True)]
+        if choice == 1:
+            self.data_frame = self.data_frame[self.data_frame[International.columns['citizenship']]
+                                    .str.contains('China|South Korea|Vietnam|Taiwan', regex=True) == False]
 
-    def citizenship_non_china(self):
-        """ Get Data with Non Chinese Citizenship """
+            self.stack.append("Non-China")
 
-        self.data_frame = self.data_frame[self.data_frame[International.columns['citizenship']]
-                                          .str.contains('China|South Korea|Vietnam|Taiwan', regex=True) == False]
+        if choice == 2:
+            self.data_frame = self.data_frame.loc[self.data_frame[International.columns['citizenship']]
+                                        .str.contains('China|South Korea|Vietnam|Taiwan', regex=True)]
 
-    def no_declines(self):
-        """ Remove data with declines """
+            self.stack.append("China")
 
-        self.data_frame = self.data_frame[self.data_frame[International.columns['decision']]
-                                          .str.contains('Admit/Decline') == False]
+    def declines_info(self, choice):
+        """ Method to Remove Declines """
 
-    def school(self, string):
-        """ Get data by school """
+        if choice == 1:
+            self.data_frame = self.data_frame[self.data_frame[International.columns['decision']]
+                                            .str.contains('Admit/Decline') == False]
 
-        self.data_frame = self.data_frame.loc[self.data_frame[International.columns['school']]
-                                              .str.contains(string)]
+            self.stack.append("Declines Removed")
 
-    def defer(self, string):
-        """ Get applications deferred to a specific term """
+    def school_info(self, choice):
+        """ Method to Filter through Schools """
+
+        if choice == 1:
+            self.data_frame = self.data_frame.loc[self.data_frame[International.columns['school']]
+                                              .str.contains('SOB')]
+
+            self.stack.append("School Of Business")
+
+        if choice == 2:
+            self.data_frame = self.data_frame.loc[self.data_frame[International.columns['school']]
+                                              .str.contains('SES')]
+            
+            self.stack.append("School of Engineering and Sciences")
+
+        if choice == 3:
+            self.data_frame = self.data_frame.loc[self.data_frame[International.columns['school']]
+                                              .str.contains('SSE')]
+
+            self.stack.append("School of Systems and Enterprises")
+
+    def deferral_info(self, string):
+        """ Method to filter through deferrals """
 
         data_frame1 = self.data_frame[self.data_frame[International.columns['defer']]
-                                      .isnull()]
+                                    .isnull()]
 
         data_frame2 = self.data_frame.loc[self.data_frame[International.columns['defer']]
-                                          .str.contains(string, na=False)]
+                                        .str.contains(string, na=False)]
 
         frames = [data_frame1, data_frame2]
         self.data_frame = pd.concat(frames)
+        self.stack.append(f"Deferred to {string}")
 
-    def reporting(self):
-        """ Get data by reporting classification """
+    def reporting_info(self, choice):
+        """ Method to filter through Reporting Classification """
 
-        self.data_frame = self.data_frame.loc[self.data_frame[International.columns['reporting']]
-                                              .str.contains('Int', na=False)]
+        if choice == 1:
+            self.data_frame = self.data_frame.loc[self.data_frame[International.columns['reporting']]
+                                        .str.contains('Int', na=False)]
 
-    def on_campus(self):
-        """ Get On-Campus Student data """
+            self.stack.append("Reporting Classification - International")
 
-        self.data_frame = self.data_frame.loc[self.data_frame[International.columns['onCampus']]
+    def on_campus_info(self, choice):
+        """ Method to filter through On Campus Student Data """
+
+        if choice == 1:
+            self.data_frame = self.data_frame.loc[self.data_frame[International.columns['onCampus']]
                                               .str.contains('On-campus classes on the Stevens campus', na=False)]
 
-    def no_i20(self):
-        """ Get data with no I-20 """
+            self.stack.append("On Campus Students")
 
-        self.data_frame = self.data_frame[self.data_frame[International.columns['i20Process']]
-                                          .isnull()]
+    def transfer_info(self, choice):
+        """ Method to filter through transferred students """
 
-    def no_transfer(self):
-        """ Get data with no transfers """
+        if choice == 1:
+            self.data_frame = self.data_frame[self.data_frame[International.columns['i20Transfer']]
+                                    .isnull()]
+            
+            self.stack.append("No Transfers")
 
-        self.data_frame = self.data_frame[self.data_frame[International.columns['i20Transfer']]
-                                          .isnull()]
+    def fellowship_info(self, choice):
+        """ Method to filter through fellowship data """
 
-    def no_fellowship(self):
-        """ Get data with no fellowships """
+        if choice == 1:
+            self.data_frame = self.data_frame[self.data_frame[International.columns['fellowship']]
+                                    .isnull()]
 
-        self.data_frame = self.data_frame[self.data_frame[International.columns['fellowship']]
-                                          .isnull()]
+            self.stack.append("No Fellowships")
 
-    def no_deposit(self):
-        """ Get data with no deposit paid """
+    def deposit_info(self, choice):
+        """ Method to filter through enrollment deposit information """
 
-        self.data_frame = self.data_frame[self.data_frame[International.columns['deposit']]
-                                          .isnull()]
+        if choice == 1:
+            self.data_frame = self.data_frame[self.data_frame[International.columns['deposit']]
+                                    .isnull()]
 
-    def no_coa(self):
-        """ Get data with no COA """
+            self.stack.append("Not Paid Deposit")
 
-        self.data_frame = self.data_frame[self.data_frame[International.columns['coa']]
-                                          .isnull()]
+        if choice == 2:
+            self.data_frame = self.data_frame[self.data_frame[International.columns['deposit']]
+                                    .notnull()]
 
-    def yes_coa(self):
-        """ Get data with submitted COA """
+            self.stack.append("Paid Deposit")
 
-        self.data_frame = self.data_frame.loc[self.data_frame[International.columns['coa']]
-                                              .str.contains('Yes - Attending Stevens', na=False)]
+    def coa_info(self, choice):
+        """ Method to filter through Confirmation of Arrival details """
 
-    def yes_deposit(self):
-        """ Get data with paid deposit """
+        if choice == 1:
+            self.data_frame = self.data_frame[self.data_frame[International.columns['coa']]
+                                    .isnull()]
 
-        self.data_frame = self.data_frame[self.data_frame[International.columns['deposit']]
-                                          .notnull()]
+            self.stack.append("Not Submitted COA")
 
-    def yes_i20(self):
-        """ Get data with processed I-20 """
+        if choice == 2:
+            self.data_frame = self.data_frame.loc[self.data_frame[International.columns['coa']]
+                                        .str.contains('Yes - Attending Stevens', na=False)]
 
-        self.data_frame = self.data_frame[self.data_frame[International.columns['i20Process']]
-                                          .notnull()]
+            self.stack.append("Submitted COA")
+
+    def i20_info(self, choice):
+        """ Method to filter through I20 information """
+
+        i20_issued = False
+        if choice == 1:
+            self.data_frame = self.data_frame[self.data_frame[International.columns['i20Process']]
+                                    .isnull()]
+
+            self.stack.append("No I-20")
+
+        if choice == 2:
+            self.data_frame = self.data_frame[self.data_frame[International.columns['i20Process']]
+                                    .notnull()]
+
+            self.stack.append("I-20 Issued")
+            i20_issued = True
+
+        return i20_issued
+
 
     def no_last_contact(self):
         """ Get data with no last contact date """
 
         self.data_frame = self.data_frame[self.data_frame[International.columns['lastContact']]
                                           .isnull()]
+        
+        self.stack.append("No Last Contact Date")
 
     def compare_date_before(self, date):
         """ Get data with last contact date before specified date """
@@ -185,6 +243,7 @@ class International:
 
         self.data_frame.to_excel(f'{string}_{self.today.strftime("%m-%d-%Y")}.xlsx', index=False)
 
+
 class Domestic:
     """ Class for Domestic Student Data Excel Files """
 
@@ -198,6 +257,7 @@ class Domestic:
         """ Initialise Domestic Object - Create Pandas Dataframe"""
 
         os.chdir(os.getcwd())
+        self.stack = []
         self.name = name
         self.today = datetime.datetime.now()
 
@@ -207,33 +267,39 @@ class Domestic:
         except FileNotFoundError:
             print("Error: File Does not Exist...")
 
-    def master(self):
-        """ Get Masters/Graduate Certificate Data """
+    def enrollment_options(self, choice):
+        """ Method to filter through Graduate and PhD applications """
 
-        self.data_frame = self.data_frame.loc[self.data_frame[Domestic.columns['enrollInfo']]
-                                              .str.contains('Master|Graduate Certificate|Engineer*', regex=True)]
+        if choice == 1:
+            self.data_frame = self.data_frame.loc[self.data_frame[Domestic.columns['enrollInfo']]
+                                        .str.contains('Master|Graduate Certificate|Engineer*', regex=True)]
 
-    def doctoral(self):
-        """ Get doctoral data """
+            self.stack.append("Masters/Graduate Certificate")
 
-        self.data_frame = self.data_frame.loc[self.data_frame[Domestic.columns['enrollInfo']]
-                                              .str.contains('^Ph.D.', regex=True)]
+        if choice == 2:
+            self.data_frame = self.data_frame.loc[self.data_frame[Domestic.columns['enrollInfo']]
+                                        .str.contains('^Ph.D.', regex=True)]
 
-    def full_time(self):
-        """ Get Full Time Student Data """
+            self.stack.append("PhD")
 
-        self.data_frame = self.data_frame.loc[self.data_frame[Domestic.columns['enrollStatus']] == "Full-time"]
+    def enrollment_info(self, choice):
+        """ Method to filter through Enrollment status """
 
-    def part_time(self):
-        """ Get Part Time Student Data """
+        if choice == 1:
+            self.data_frame = self.data_frame.loc[self.data_frame[Domestic.columns['enrollStatus']] == "Full-time"]
+            self.stack.append("Full-Time")
 
-        self.data_frame = self.data_frame.loc[self.data_frame[Domestic.columns['enrollStatus']] == "Part-time"]
+        if choice == 2:
+            self.data_frame = self.data_frame.loc[self.data_frame[Domestic.columns['enrollStatus']] == "Part-time"]
+            self.stack.append("Part-Time")
 
     def no_last_contact(self):
         """ Get data with no last contact date """
 
         self.data_frame = self.data_frame[self.data_frame[Domestic.columns['lastContact']]
                                           .isnull()]
+
+        self.stack.append("No last contact date")
 
     def compare_date_before(self, date):
         """ Get data with last contact date before specified date """
