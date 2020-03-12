@@ -4,107 +4,145 @@ import os
 from time import sleep
 import pandas as pd
 from email_updates import main_email
+from utils import pretty_print, get_int_input, clear, get_file, get_file_name
 
-def pretty_print(string, design):
-    """ Pretty Print Function """
+class GAassist:
 
-    print(f"  {string}  ".center(100, design))
+    def __init__(self, ga_name, file_name):
+        self.ga_name = ga_name
+        self.file_name = file_name
 
-def get_int_input():
-    """ Function to get integer input """
+        self.called = 0
+        self.not_answered = 0
+        self.declines = 0
+        self.again = True
 
-    var_input = input()
-    try:
-        var_input = int(var_input)
-        return var_input
-    except ValueError:
-        print('ERROR: Enter a Valid Number... \n')
-        get_int_input()
+        self.called_list = []
+        self.not_called_list = []
+        self.decline_list = []
+        self.no_answer_list = []
 
-def clear():
-    """ Function to clear screen """
+        self.excel = pd.read_excel(file_name)
+        self.col = list(self.excel)
 
-    if os.name == 'nt':
-        _ = os.system('cls')
+        for index, row in self.excel.iterrows():
+            self.display_row_ui(index, row)
 
-    else:
-        _ = os.system('clear')
+        self.not_called = len(self.not_called_list)
+        self.total = self.called + self.not_answered + self.declines
 
-def get_file():
-    """ Function to get input file """
+        self.email_options()
+        self.save_quit()
 
-    name = input("Enter Name of the File:\n")
-    name = name + ".xlsx"
-    os.chdir(os.getcwd())
-    if not os.path.exists(name):
-        raise FileNotFoundError
+    def save_quit(self):
 
-    return name
+        if len(self.not_called_list) != 0:
+            not_called_df = pd.DataFrame(self.not_called_list, columns=self.col)
+            not_called_df.to_excel(f"{self.ga_name}-not-called.xlsx", index=False)
+            pretty_print(f"Excel File with Not Called Students Data Saved as {self.ga_name}-not-called.xlsx", "-")
 
-def get_file_name(index):
-    """ Function to get file name """
+        if len(self.called_list) != 0:
+            called_df = pd.DataFrame(self.called_list, columns=self.col)
+            called_df.to_excel(f"{self.ga_name}-called.xlsx", index=False)
+            pretty_print(f"Excel File with Called Students Data Saved as {self.ga_name}-called.xlsx", "-")
 
-    file_name = input(f"Enter name for Excel File: {index}\n")
-    return file_name
+        if len(self.no_answer_list) != 0:
+            no_answer_df = pd.DataFrame(self.no_answer_list, columns=self.col)
+            no_answer_df.to_excel(f"{self.ga_name}-no-answer.xlsx", index=False)
+            pretty_print(f"Excel File with No Answers Saved as {self.ga_name}-no-answer.xlsx", "-")
 
-def simple_function(row):
-    """ Function to print data row """
+        if len(self.decline_list) != 0:
+            decline_df = pd.DataFrame(self.decline_list, columns=self.col)
+            decline_df.to_excel(f"{self.ga_name}_declines.xlsx", index=False)
+            pretty_print(f"Excel File with Declines saved as {self.ga_name}_declines.xlsx", "-")
 
-    reference = row["Ref"]
-    first_name = row["First"]
-    last_name = row["Last"]
-    daytime = row["Daytime"]
-    mobile = row["Mobile"]
-    citizenship = row["Citizenship1"]
+        raise SystemExit
 
-    pretty_print(f"Slate Reference: {reference}", "-")
-    pretty_print(f"Name: {first_name} {last_name}", "-")
-    pretty_print(f"Contact Numbers: {daytime} / {mobile}", "-")
-    pretty_print(f"Citizenship: {citizenship}", "-")
+    def display_row_ui(self, index, row):
+        row_list = []
+        for col_name in self.col:
+            row_list.append(row[col_name])
 
-def call_result(called, not_answered, declines):
-    """ Function to update call result """
+        if self.again:
+            pretty_print(f"Index: {index + 1} / Called: {self.called} / Not Answered: {self.not_answered} / Declines: {self.declines}", "/")
+            self.simple_function(row)
+            self.call_result(row_list)
+            self.looping()
+            clear()
 
-    pretty_print("How was your call?", "*")
-    pretty_print("If you talked to the student enter: 200", "-")
-    pretty_print("If the call was not answered enter: 500", "-")
-    pretty_print("If you did not call the person enter: 999", "-")
-    pretty_print("If the student wants to Decline/Withdraw application enter: 404", "-")
+        if not self.again:
+            self.not_called_list.append(row_list)
 
-    again = True
-    while again:
-        result = get_int_input()
-        if result == 200:
-            called += 1
-            again = False
+    def looping(self):
+        """ Function to loop again """
 
-        elif result == 500:
-            not_answered += 1
-            again = False
+        pretty_print("To Exit enter: 101", ":")
+        pretty_print("To continue press any number key:", ":")
+        decision = get_int_input()
 
-        elif result == 999:
-            again = False
+        if decision == 101:
+            self.again = False
 
-        elif result == 404:
-            declines += 1
-            again = False
+    def simple_function(self, row):
+        """ Function to print data row """
 
-        else:
-            print("You can't get out of this! Enter a valid number!")
+        reference = row["Ref"]
+        first_name = row["First"]
+        last_name = row["Last"]
+        daytime = row["Daytime"]
+        mobile = row["Mobile"]
+        citizenship = row["Citizenship1"]
 
-    return called, not_answered, declines, result
+        pretty_print(f"Slate Reference: {reference}", "-")
+        pretty_print(f"Name: {first_name} {last_name}", "-")
+        pretty_print(f"Contact Numbers: {daytime} / {mobile}", "-")
+        pretty_print(f"Citizenship: {citizenship}", "-")
 
-def looping(again):
-    """ Function to loop again """
+    def call_result(self, row_list):
+        """ Function to update call result """
 
-    pretty_print("To Exit enter: 101", ":")
-    pretty_print("To continue press any number key:", ":")
-    decision = get_int_input()
+        pretty_print("How was your call?", "*")
+        pretty_print("If you talked to the student enter: 200", "-")
+        pretty_print("If the call was not answered enter: 500", "-")
+        pretty_print("If you did not call the person enter: 999", "-")
+        pretty_print("If the student wants to Decline/Withdraw application enter: 404", "-")
 
-    if decision == 101:
-        again = False
+        again = True
+        while again:
+            result = get_int_input()
+            if result == 200:
+                self.called += 1
+                again = False
+                self.called_list.append(row_list)
 
-    return again
+            elif result == 500:
+                self.not_answered += 1
+                again = False
+                self.no_answer_list.append(row_list)
+
+            elif result == 999:
+                again = False
+
+            elif result == 404:
+                self.declines += 1
+                again = False
+                self.decline_list.append(row_list)
+
+            else:
+                print("You can't get out of this! Enter a valid number!")
+
+    def email_options(self):
+        pretty_print("To send Email updates press: 200", "*")
+        pretty_print("To continue press any number key:", "*")
+        choice = get_int_input()
+
+        if choice == 200:
+
+            try:
+                main_email(self.ga_name, self.total, self.called, self.not_answered, self.declines, self.not_called)
+            except Exception as log_error:
+                pretty_print("Server error...Couldn't send the email updates", ":")
+                print(log_error)
 
 def ga_assist_main():
     """ Main GA Assist Function """
@@ -112,10 +150,6 @@ def ga_assist_main():
     clear()
     pretty_print("Hi GAs! Hope you enjoy Calling Campaigns from now", "#")
     ga_name = input("Enter your Name: \n")
-    called = 0
-    not_answered = 0
-    declines = 0
-    again = True
 
     try:
         name = get_file()
@@ -124,86 +158,8 @@ def ga_assist_main():
         clear()
         pretty_print("The File Does not Exist.", ":")
         pretty_print("Make Sure your place the file in the working directory.", ":")
-        sleep(2)
+        sleep(5)
         ga_assist_main()
 
     else:
-        try:
-            dataframe = pd.read_excel(name)
-            col = list(dataframe)
-
-            called_list = []
-            not_called_list = []
-            decline_list = []
-            no_answer_list = []
-
-            for index, row in dataframe.iterrows():
-                row_list = []
-                for col_name in col:
-                    row_list.append(row[col_name])
-
-                if again:
-
-                    pretty_print(f"Index: {index + 1} / Called: {called} / Not Answered: {not_answered} / Declines: {declines}", "/")
-                    simple_function(row)
-                    called, not_answered, declines, result = call_result(called, not_answered, declines)
-
-                    if result == 200:
-                        called_list.append(row_list)
-
-                    if result == 500:
-                        no_answer_list.append(row_list)
-
-                    if result == 999:
-                        not_called_list.append(row_list)
-
-                    if result == 404:
-                        decline_list.append(row_list)
-
-                    again = looping(again)
-                    clear()
-
-                if not again:
-                    not_called_list.append(row_list)
-
-            not_called = len(not_called_list)
-            total = called + not_answered + declines
-            pretty_print("To send Email updates press: 200", "*")
-            pretty_print("To continue press any number key:", "*")
-            choice = get_int_input()
-
-            if choice == 200:
-
-                try:
-                    main_email(ga_name, total, called, not_answered, declines, not_called)
-                except Exception as log_error:
-                    pretty_print("Server error...Couldn't send the email updates", ":")
-                    print(log_error)
-
-            if len(not_called_list) != 0:
-                not_called_df = pd.DataFrame(not_called_list, columns=col)
-                not_called_df.to_excel(f"{ga_name}-not-called.xlsx", index=False)
-                pretty_print(f"Excel File with Not Called Students Data Saved as {ga_name}-not-called.xlsx", "-")
-
-            if len(called_list) != 0:
-                called_df = pd.DataFrame(called_list, columns=col)
-                called_df.to_excel(f"{ga_name}-called.xlsx", index=False)
-                pretty_print(f"Excel File with Called Students Data Saved as {ga_name}-called.xlsx", "-")
-
-            if len(no_answer_list) != 0:
-                no_answer_df = pd.DataFrame(no_answer_list, columns=col)
-                no_answer_df.to_excel(f"{ga_name}-no-answer.xlsx", index=False)
-                pretty_print(f"Excel File with No Answers Saved as {ga_name}-no-answer.xlsx", "-")
-
-            if len(decline_list) != 0:
-                decline_df = pd.DataFrame(decline_list, columns=col)
-                decline_df.to_excel(f"{ga_name}_declines.xlsx", index=False)
-                pretty_print(f"Excel File with Declines saved as {ga_name}_declines.xlsx", "-")
-
-            pretty_print("Have a Nice Day! - @MrunalSalvi", "&")
-            sleep(5)
-
-        except Exception as log_error:
-            print("Oops something went wrong...")
-            print(log_error)
-            sleep(10)
+        GAassist(ga_name, name)

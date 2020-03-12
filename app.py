@@ -6,24 +6,7 @@ from domestic_workflow import main_domestic
 from ga_assist import ga_assist_main
 from split_data import main_df_split
 from concat_data import concat_data_main
-
-def pretty_print(string, design):
-    """ Pretty Print Function """
-
-    print(f"  {string}  ".center(100, design))
-
-def get_int_input():
-    """ Function to get integer input """
-
-    var_input = input()
-
-    try:
-        var_input = int(var_input)
-        return var_input
-
-    except ValueError:
-        print('ERROR: Enter a Valid Number...')
-        get_int_input()
+from utils import pretty_print, get_int_input
 
 def main():
     """ Main App Function """

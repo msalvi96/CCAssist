@@ -8,36 +8,12 @@ from time import sleep
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from prettytable import PrettyTable
+from utils import pretty_print, get_int_input, clear
 
 ADDRESS = "dev.msalvi@gmail.com"
 PASSWORD = "Aparna9664443222!"
 HOST = "smtp.gmail.com"
 PORT = 587
-
-def pretty_print(string, design):
-    """ Pretty Print Function """
-
-    print(f"  {string}  ".center(100, design))
-
-def get_int_input():
-    """ Function to get integer input """
-
-    var_input = input()
-    try:
-        var_input = int(var_input)
-        return var_input
-    except ValueError:
-        print('ERROR: Enter a Valid Number... \n')
-        get_int_input()
-
-def clear():
-    """ Function to clear screen """
-
-    if os.name == 'nt':
-        _ = os.system('cls')
-
-    else:
-        _ = os.system('clear')
 
 def simple_contacts(filename):
     """ Function to get contacts """
